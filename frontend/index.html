@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Electricity Fraud Detection System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo { color: white; font-size: 1.8rem; font-weight: bold; }
+        .status-badge {
+            background: #28a745; color: white; padding: 0.5rem 1rem;
+            border-radius: 25px; font-size: 0.9rem; animation: pulse 2s infinite;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem; margin-bottom: 3rem;
+        }
+        
+        .metric-card {
+            background: rgba(255,255,255,0.95); border-radius: 15px; padding: 2rem;
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease; position: relative; overflow: hidden;
+        }
+        
+        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+        .metric-card.customers::before { background: #17a2b8; }
+        .metric-card.critical::before { background: #dc3545; }
+        .metric-card.score::before { background: #ffc107; }
+        .metric-card.detection::before { background: #28a745; }
+        
+        .metric-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .metric-value { font-size: 2.5rem; font-weight: bold; color: #333; margin-bottom: 0.5rem; }
+        .metric-label { color: #666; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .critical { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .success { color: #28a745; }
+        .info { color: #17a2b8; }
+        
+        .dashboard-grid {
+            display: grid; grid-template-columns: 1fr 400px; gap: 2rem; margin-bottom: 2rem;
+        }
+        
+        .main-content, .chart-container, .form-container {
+            background: white; border-radius: 15px; padding: 2rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+        
+        .section-title {
+            font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;
+            color: #333; display: flex; align-items: center; gap: 0.5rem;
+        }
+        
+        .table-container { overflow-x: auto; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 1rem; text-align: left; font-weight: 600;
+        }
+        td { padding: 1rem; border-bottom: 1px solid #eee; }
+        tr:hover { background-color: #f8f9fa; }
+        
+        .risk-critical { background: #dc3545; color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.875rem; font-weight: bold; }
+        .risk-high { background: #ffc107; color: #212529; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.875rem; font-weight: bold; }
+        .risk-medium { background: #fd7e14; color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.875rem; font-weight: bold; }
+        .risk-low { background: #28a745; color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.875rem; font-weight: bold; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333; }
+        .form-group input {
+            width: 100%; padding: 0.875rem; border: 2px solid #e9ecef;
+            border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; padding: 1rem 2rem; border-radius: 8px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.3s ease; width: 100%;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        .loading { text-align: center; padding: 2rem; color: #666; }
+        .error { color: #dc3545; text-align: center; padding: 1rem; background: #f8d7da; border-radius: 8px; margin: 1rem 0; }
+        
+        .simple-chart { display: flex; flex-direction: column; gap: 1rem; }
+        .chart-item { display: flex; align-items: center; gap: 1rem; }
+        .chart-bar { flex: 1; height: 30px; border-radius: 15px; position: relative; overflow: hidden; background: #f8f9fa; }
+        .chart-fill { height: 100%; border-radius: 15px; transition: width 0.8s ease; }
+        .chart-fill.critical { background: #dc3545; }
+        .chart-fill.high { background: #ffc107; }
+        .chart-fill.medium { background: #fd7e14; }
+        .chart-fill.low { background: #28a745; }
+        .chart-label { font-weight: 600; min-width: 80px; }
+        .chart-value { font-weight: bold; min-width: 30px; text-align: right; }
+        
+        @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .pulse { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo"><i class="fas fa-bolt"></i> Electricity Fraud Detection System</div>
+            <div class="status-badge"><i class="fas fa-database"></i> MySQL Connected</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="metrics-grid">
+            <div class="metric-card customers">
+                <i class="fas fa-users metric-icon info"></i>
+                <div class="metric-value" id="totalCustomers">-</div>
+                <div class="metric-label">Total Customers</div>
+            </div>
+            <div class="metric-card critical pulse">
+                <i class="fas fa-exclamation-triangle metric-icon critical"></i>
+                <div class="metric-value" id="criticalCases">-</div>
+                <div class="metric-label">Critical Cases</div>
+            </div>
+            <div class="metric-card score">
+                <i class="fas fa-chart-line metric-icon warning"></i>
+                <div class="metric-value" id="avgFraudScore">-</div>
+                <div class="metric-label">Avg Fraud Score</div>
+            </div>
+            <div class="metric-card detection">
+                <i class="fas fa-shield-alt metric-icon success"></i>
+                <div class="metric-value" id="detectionRate">-</div>
+                <div class="metric-label">Detection Rate</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="main-content">
+                <h2 class="section-title">
+                    <i class="fas fa-exclamation-circle critical"></i>
+                    High Risk Fraud Cases
+                </h2>
+                <div class="table-container">
+                    <table id="criticalTable">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-id-badge"></i> Customer ID</th>
+                                <th><i class="fas fa-user"></i> Name</th>
+                                <th><i class="fas fa-map-marker-alt"></i> City</th>
+                                <th><i class="fas fa-tachometer-alt"></i> Fraud Score</th>
+                                <th><i class="fas fa-exclamation-triangle"></i> Risk Level</th>
+                                <th><i class="fas fa-calendar"></i> Last Reading</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="6" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading fraud cases...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="chart-container">
+                    <h3 class="section-title"><i class="fas fa-chart-bar"></i> Risk Distribution</h3>
+                    <div class="simple-chart">
+                        <div class="chart-item">
+                            <div class="chart-label">Critical:</div>
+                            <div class="chart-bar"><div class="chart-fill critical" id="criticalBar" style="width: 0%"></div></div>
+                            <div class="chart-value" id="criticalValue">0</div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-label">High:</div>
+                            <div class="chart-bar"><div class="chart-fill high" id="highBar" style="width: 0%"></div></div>
+                            <div class="chart-value" id="highValue">0</div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-label">Medium:</div>
+                            <div class="chart-bar"><div class="chart-fill medium" id="mediumBar" style="width: 0%"></div></div>
+                            <div class="chart-value" id="mediumValue">0</div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-label">Low:</div>
+                            <div class="chart-bar"><div class="chart-fill low" id="lowBar" style="width: 0%"></div></div>
+                            <div class="chart-value" id="lowValue">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-container">
+                    <h3 class="section-title"><i class="fas fa-plus-circle"></i> Add New Reading</h3>
+                    <form id="addReadingForm">
+                        <div class="form-group">
+                            <label for="customerId"><i class="fas fa-id-badge"></i> Customer ID</label>
+                            <input type="number" id="customerId" required min="1" max="20" placeholder="Enter customer ID (1-20)">
+                        </div>
+                        <div class="form-group">
+                            <label for="consumption"><i class="fas fa-bolt"></i> Consumption (kWh)</label>
+                            <input type="number" id="consumption" required step="0.1" min="0" placeholder="Enter consumption in kWh">
+                        </div>
+                        <div class="form-group">
+                            <label for="readingDate"><i class="fas fa-calendar"></i> Reading Date</label>
+                            <input type="date" id="readingDate" required>
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Add Reading & Analyze
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
